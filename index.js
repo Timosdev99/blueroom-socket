@@ -2,7 +2,10 @@ const { createServer } = require("http")
 const { Server } = require("socket.io")
 
 const allowedOrigins = (process.env.SOCKET_CORS_ORIGINS || "http://localhost:3000").split(",")
-const httpServer = createServer()
+const httpServer = createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" })
+  res.end("ok")
+})
 const io = new Server(httpServer, {
   cors: {
     origin: allowedOrigins,
