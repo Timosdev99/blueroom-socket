@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "echo 'no build steps'",
     "start": "node index.js"
   },
   "dependencies": {
