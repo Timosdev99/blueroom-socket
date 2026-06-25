@@ -1,0 +1,11 @@
+{
+  "name": "blueroom-socket-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.3"
+  }
+}
