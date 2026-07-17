@@ -14,7 +14,7 @@ const io = new Server(httpServer, {
 })
 
 const rooms = new Map()
-
+const roomVotes = new Map()
 io.on("connection", (socket) => {
   console.log(`user connected: ${socket.id}`)
 
@@ -72,17 +72,37 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("streak:update", streak)
   })
 
+
+
   socket.on("queue:advance-vote", ({ roomId, userId, userName }) => {
     io.to(roomId).emit("queue:advance-vote", { userId, userName })
+    if (!roomVotes.has(roomId)) {
+      const voteData = { votes: new Map(), timer: null }
+      roomVotes.set(roomId, voteData)
+      voteData.timer = setTimeout(() => {
+        roomVotes.delete(roomId)
+        const vals = [...voteData.votes.values()]
+        const yes = vals.filter(Boolean).length
+        const no = vals.filter(v => v === false).length
+        io.to(roomId).emit("queue:vote-result", { yes, no })
+      }, 10_000)
+    }
   })
 
-  socket.on("queue:vote-to-advance", ({ roomId, userId, userName, vote }) => {
-    io.to(roomId).emit("queue:vote-to-advance", { userId, userName, vote })
+  socket.on("queue:vote-to-advance", ({ roomId, userId, vote }) => {
+    io.to(roomId).emit("queue:vote-to-advance", { userId, vote })
+    const session = roomVotes.get(roomId)
+    if (session) session.votes.set(userId, vote)
   })
+
 
   socket.on("queue:vote-cancelled", ({ roomId }) => {
+    const session = roomVotes.get(roomId)
+    if (session?.timer) clearTimeout(session.timer)
+    roomVotes.delete(roomId)
     io.to(roomId).emit("queue:vote-cancelled", {})
   })
+
 
   socket.on("disconnect", () => {
     console.log(`user disconnected: ${socket.id}`)
