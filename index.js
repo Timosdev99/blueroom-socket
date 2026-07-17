@@ -75,18 +75,21 @@ io.on("connection", (socket) => {
 
 
   socket.on("queue:advance-vote", ({ roomId, userId, userName }) => {
+    const existing = roomVotes.get(roomId)
+    if (existing?.timer) clearTimeout(existing.timer)
+
+    const voteData = { votes: new Map(), timer: null }
+    roomVotes.set(roomId, voteData)
+
     io.to(roomId).emit("queue:advance-vote", { userId, userName })
-    if (!roomVotes.has(roomId)) {
-      const voteData = { votes: new Map(), timer: null }
-      roomVotes.set(roomId, voteData)
-      voteData.timer = setTimeout(() => {
-        roomVotes.delete(roomId)
-        const vals = [...voteData.votes.values()]
-        const yes = vals.filter(Boolean).length
-        const no = vals.filter(v => v === false).length
-        io.to(roomId).emit("queue:vote-result", { yes, no })
-      }, 10_000)
-    }
+
+    voteData.timer = setTimeout(() => {
+      roomVotes.delete(roomId)
+      const vals = [...voteData.votes.values()]
+      const yes = vals.filter(Boolean).length
+      const no = vals.filter(v => v === false).length
+      io.to(roomId).emit("queue:vote-result", { yes, no })
+    }, 10_000)
   })
 
   socket.on("queue:vote-to-advance", ({ roomId, userId, vote }) => {
