@@ -72,6 +72,18 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("streak:update", streak)
   })
 
+  socket.on("queue:advance-vote", ({ roomId, userId, userName }) => {
+    io.to(roomId).emit("queue:advance-vote", { userId, userName })
+  })
+
+  socket.on("queue:vote-to-advance", ({ roomId, userId, userName, vote }) => {
+    io.to(roomId).emit("queue:vote-to-advance", { userId, userName, vote })
+  })
+
+  socket.on("queue:vote-cancelled", ({ roomId }) => {
+    io.to(roomId).emit("queue:vote-cancelled", {})
+  })
+
   socket.on("disconnect", () => {
     console.log(`user disconnected: ${socket.id}`)
     rooms.forEach((users, roomId) => {
