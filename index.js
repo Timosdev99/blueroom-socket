@@ -18,11 +18,11 @@ const roomVotes = new Map()
 io.on("connection", (socket) => {
   console.log(`user connected: ${socket.id}`)
 
-  socket.on("room:join", ({ roomId, userId }) => {
+  socket.on("room:join", ({ roomId, userId, userName }) => {
     socket.join(roomId)
     if (!rooms.has(roomId)) rooms.set(roomId, new Set())
     rooms.get(roomId).add(userId)
-    socket.to(roomId).emit("room:user-joined", { userId, onlineCount: rooms.get(roomId).size })
+    socket.to(roomId).emit("room:user-joined", { userId, userName, onlineCount: rooms.get(roomId).size })
   })
 
   socket.on("room:leave", ({ roomId, userId }) => {
